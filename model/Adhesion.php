@@ -13,23 +13,67 @@ class Adhesion {
         $this->statut = $statut;
     }
 
-    public function ajouterDemande() {
+    // Getters
+    public function getIdAdhesion() {
+        return $this->id_adhesion;
+    }
+
+    public function getIdEtudiant() {
+        return $this->id_etudiant;
+    }
+
+    public function getIdClub() {
+        return $this->id_club;
+    }
+
+    public function getStatut() {
+        return $this->statut;
+    }
+
+    // Setters (optionnels)
+    public function setIdEtudiant($id_etudiant) {
+        $this->id_etudiant = $id_etudiant;
+    }
+
+    public function setIdClub($id_club) {
+        $this->id_club = $id_club;
+    }
+
+    public function setStatut($statut) {
+        $this->statut = $statut;
+    }
+
+    // Méthodes CRUD
+    public function ajouterAdhesion() {
         $pdo = Database::getConnection();
         $sql = "INSERT INTO adhesions (id_etudiant, id_club, statut) VALUES (?, ?, ?)";
         $stmt = $pdo->prepare($sql);
         return $stmt->execute([$this->id_etudiant, $this->id_club, $this->statut]);
     }
 
-    public static function validerAdhesion($id_adhesion) {
+    public static function getAllAdhesions() {
         $pdo = Database::getConnection();
-        $sql = "UPDATE adhesions SET statut = 'accepté' WHERE id_adhesion = ?";
-        $stmt = $pdo->prepare($sql);
-        return $stmt->execute([$id_adhesion]);
+        $stmt = $pdo->query("SELECT * FROM adhesions");
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public static function refuserAdhesion($id_adhesion) {
+    public static function getAdhesionById($id_adhesion) {
         $pdo = Database::getConnection();
-        $sql = "UPDATE adhesions SET statut = 'refusé' WHERE id_adhesion = ?";
+        $stmt = $pdo->prepare("SELECT * FROM adhesions WHERE id_adhesion = ?");
+        $stmt->execute([$id_adhesion]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    public function updateAdhesion($id_adhesion) {
+        $pdo = Database::getConnection();
+        $sql = "UPDATE adhesions SET id_etudiant = ?, id_club = ?, statut = ? WHERE id_adhesion = ?";
+        $stmt = $pdo->prepare($sql);
+        return $stmt->execute([$this->id_etudiant, $this->id_club, $this->statut, $id_adhesion]);
+    }
+
+    public static function deleteAdhesion($id_adhesion) {
+        $pdo = Database::getConnection();
+        $sql = "DELETE FROM adhesions WHERE id_adhesion = ?";
         $stmt = $pdo->prepare($sql);
         return $stmt->execute([$id_adhesion]);
     }

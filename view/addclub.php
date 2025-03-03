@@ -4,21 +4,11 @@ require_once '../controller/ClubC.php';
 require_once '../model/Club.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $nom_club = isset($_POST['nom_club']) ? $_POST['nom_club'] : '';
-    $date_creation = isset($_POST['date_creation']) ? $_POST['date_creation'] : '';
-    $description = isset($_POST['description']) ? $_POST['description'] : '';
-    $reseaux_sociaux = isset($_POST['reseaux_sociaux']) ? $_POST['reseaux_sociaux'] : '';
-    $logo = isset($_POST['logo']) ? $_POST['logo'] : '';
-
-    if (!empty($nom_club) && !empty($date_creation) && !empty($description)) {
-        $club = new Club($nom_club, $date_creation, $description, $reseaux_sociaux, $logo);
-        $clubC = new ClubC();
-        $clubC->addClub($club);
-        header("Location: listclub.php");
-        exit();
-    } else {
-        echo "<p>Veuillez remplir tous les champs obligatoires !</p>";
-    }
+    $club = new Club($_POST['nom_club'], $_POST['date_creation'], $_POST['description'], $_POST['reseaux_sociaux'], $_POST['logo']);
+    $clubC = new ClubC();
+    $clubC->addClub($club);
+    header("Location: listclub.php");
+    exit();
 }
 ?>
 
@@ -34,23 +24,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <form method="POST">
         <div class="mb-3">
             <label>Nom du Club</label>
-            <input type="text" name="nom_club" class="form-control" value="<?= isset($nom_club) ? $nom_club : '' ?>" required>
+            <input type="text" name="nom_club" class="form-control" required>
         </div>
         <div class="mb-3">
             <label>Date de Création</label>
-            <input type="date" name="date_creation" class="form-control" value="<?= isset($date_creation) ? $date_creation : '' ?>" required>
+            <input type="date" name="date_creation" class="form-control" required>
         </div>
         <div class="mb-3">
             <label>Description</label>
-            <textarea name="description" class="form-control" required><?= isset($description) ? $description : '' ?></textarea>
+            <textarea name="description" class="form-control" required></textarea>
         </div>
         <div class="mb-3">
             <label>Réseaux Sociaux</label>
-            <input type="text" name="reseaux_sociaux" class="form-control" value="<?= isset($reseaux_sociaux) ? $reseaux_sociaux : '' ?>">
+            <input type="text" name="reseaux_sociaux" class="form-control">
         </div>
         <div class="mb-3">
             <label>URL du Logo</label>
-            <input type="text" name="logo" class="form-control" value="<?= isset($logo) ? $logo : '' ?>">
+            <input type="text" name="logo" class="form-control">
         </div>
         <button type="submit" class="btn btn-success">Ajouter</button>
         <a href="listclub.php" class="btn btn-secondary">Retour</a>
