@@ -1,5 +1,5 @@
 <?php
-require_once '../config.php';
+require_once '../Config.php';
 require_once '../controller/AdhesionC.php';
 
 $adhesionC = new AdhesionC();
@@ -35,8 +35,8 @@ $adhesions = $adhesionC->listAdhesions();
                     <td><?= $adhesion['statut'] ?></td>
                     <td>
                         <a href="editadhesion.php?id=<?= $adhesion['id_adhesion'] ?>" class="btn btn-warning btn-sm">Modifier</a>
-                        <a href="deleteadhesion.php?id=<?= $adhesion['id_adhesion'] ?>" class="btn btn-danger btn-sm">Supprimer</a>
-                    </td>
+                        <a href="deleteadhesion.php?id_etudiant=<?= $adhesion['id_etudiant'] ?>&id_club=<?= $adhesion['id_club'] ?>" class="btn btn-danger btn-sm">Supprimer</a>
+                        </td>
                 </tr>
             <?php endforeach; ?>
         </tbody>

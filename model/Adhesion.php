@@ -30,7 +30,6 @@ class Adhesion {
         return $this->statut;
     }
 
-    // Setters (optionnels)
     public function setIdEtudiant($id_etudiant) {
         $this->id_etudiant = $id_etudiant;
     }
@@ -43,7 +42,6 @@ class Adhesion {
         $this->statut = $statut;
     }
 
-    // Méthodes CRUD
     public function ajouterAdhesion() {
         $pdo = Database::getConnection();
         $sql = "INSERT INTO adhesions (id_etudiant, id_club, statut) VALUES (?, ?, ?)";
@@ -57,11 +55,12 @@ class Adhesion {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public static function getAdhesionById($id_adhesion) {
+    public static function getAdhesionById($id_adhesion) 
+    {
         $pdo = Database::getConnection();
         $stmt = $pdo->prepare("SELECT * FROM adhesions WHERE id_adhesion = ?");
         $stmt->execute([$id_adhesion]);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        return $stmt->fetch(PDO::FETCH_ASSOC); // Retourne un tableau associatif
     }
 
     public function updateAdhesion($id_adhesion) {

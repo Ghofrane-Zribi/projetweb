@@ -1,5 +1,5 @@
 <?php
-require_once '../config.php';
+require_once '../Config.php';
 require_once '../controller/AdhesionC.php';
 require_once '../model/Adhesion.php';
 
@@ -13,11 +13,13 @@ if (!isset($_GET['id'])) {
 $adhesion = $adhesionC->showAdhesion($_GET['id']);
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $updatedAdhesion = new Adhesion($_POST['id_etudiant'], $_POST['id_club'], $_POST['statut']);
+    $statut = $_POST['statut'];
+    $updatedAdhesion = new Adhesion($_POST['id_etudiant'], $_POST['id_club'], $statut);
     $adhesionC->updateAdhesion($updatedAdhesion, $_GET['id']);
     header("Location: listadhesion.php");
     exit();
 }
+
 ?>
 
 <!DOCTYPE html>
@@ -39,13 +41,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <input type="number" name="id_club" class="form-control" value="<?= $adhesion['id_club'] ?>" required>
         </div>
         <div class="mb-3">
-            <label>Statut</label>
-            <select name="statut" class="form-control" required>
-                <option value="en attente" <?= $adhesion['statut'] == 'en attente' ? 'selected' : '' ?>>En attente</option>
-                <option value="accepté" <?= $adhesion['statut'] == 'accepté' ? 'selected' : '' ?>>Accepté</option>
-                <option value="refusé" <?= $adhesion['statut'] == 'refusé' ? 'selected' : '' ?>>Refusé</option>
-            </select>
-        </div>
+    <label>Statut</label>
+    <select name="statut" class="form-control" required>
+        <option value="en attente" <?= $adhesion['statut'] == 'en attente' ? 'selected' : '' ?>>En attente</option>
+        <option value="accepté" <?= $adhesion['statut'] == 'accepté' ? 'selected' : '' ?>>Accepté</option>
+        <option value="refusé" <?= $adhesion['statut'] == 'refusé' ? 'selected' : '' ?>>Refusé</option>
+    </select>
+</div>
         <button type="submit" class="btn btn-warning">Modifier</button>
         <a href="listadhesion.php" class="btn btn-secondary">Retour</a>
     </form>
