@@ -1,101 +1,67 @@
 <?php
-require_once '../Config.php';
+require_once '../core/Database.php';
+require_once '../model/entite/Etudiant.php';
+require_once '../model/manager/EtudiantManager.php';
 
 class EtudiantC {
-    // Lister tous les étudiants
-    public function listEtudiants() {
-        $sql = "SELECT * FROM etudiants";
-        $db = Config::getConnexion();
-        try {
-            $liste = $db->query($sql);
-            return $liste;
-        } catch (Exception $e) {
-            die('Error: ' . $e->getMessage());
-        }
+    public function register() {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            try {
+                $etudiant = new Etudiant();
+                $etudiant->hydrate($_POST);
+                
+                $manager = new EtudiantManager();
+                $id = $manager->create($etudiant);
+                
+                $_SESSION['user'] = $manager->find($id);
+                header('Location: /dashboard');
+                exit;
+            } catch (Exception $e) {
+                $_SESSION['error'] = $e->getMessage();
+                header('Location: /register');
+                exit;
+            }
+        }require __DIR__ . '/../view/etudiant/register_view.php';
     }
 
-    // Ajouter un étudiant
-    public function addEtudiant($etudiant) {
-        $sql = "INSERT INTO etudiants (nom, prenom, email, mot_de_passe, date_naissance, cv, id_club) 
-                VALUES (:nom, :prenom, :email, :mot_de_passe, :date_naissance, :cv, :id_club)";
-        $db = Config::getConnexion();
-        try {
-            $query = $db->prepare($sql);
-            $query->execute([
-                'nom' => $etudiant->getNom(),
-                'prenom' => $etudiant->getPrenom(),
-                'email' => $etudiant->getEmail(),
-                'mot_de_passe' => $etudiant->getMotDePasse(),
-                'date_naissance' => $etudiant->getDateNaissance(),
-                'cv' => $etudiant->getCv(),
-                'id_club' => $etudiant->getIdClub(),
-            ]);
-
-            echo "Étudiant ajouté avec succès!";
-        } catch (Exception $e) {
-            echo 'Erreur lors de l\'ajout de l\'étudiant: ' . $e->getMessage();
-        }
+    public function login() {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            try {
+                $manager = new EtudiantManager();
+                $etudiant = $manager->findByEmail($_POST['email']);
+                
+                if ($etudiant && password_verify($_POST['mdp'], $etudiant->getMotDePasse())) {
+                    $_SESSION['user'] = $etudiant;
+                    header('Location: /dashboard');
+                    exit;
+                }
+                
+                throw new Exception("Identifiants invalides");
+            } catch (Exception $e) {
+                $_SESSION['error'] = $e->getMessage();
+                header('Location: /login');
+                exit;
+            }
+        }require __DIR__ . '/../view/etudiant/login.php';
     }
 
-    // Supprimer un étudiant
-    public function deleteEtudiant($id_etudiant) {
-        $sql = "DELETE FROM etudiants WHERE id_etudiant = :id_etudiant";
-        $db = Config::getConnexion();
-        $req = $db->prepare($sql);
-        $req->bindValue(':id_etudiant', $id_etudiant);
-
+    public function updateEtudiant($id) {
         try {
-            $req->execute();
+            $manager = new EtudiantManager();
+            $etudiant = $manager->find($id);
+            $etudiant->hydrate($_POST);
+            
+            if ($manager->update($etudiant)) {
+                $_SESSION['success'] = "Profil mis à jour";
+            }
+            
+            header('Location: /profile');
+            exit;
+            
         } catch (Exception $e) {
-            die('Error: ' . $e->getMessage());
-        }
-    }
-
-    // Afficher un étudiant par son ID
-    public function showEtudiant($id_etudiant) {
-        $sql = "SELECT * FROM etudiants WHERE id_etudiant = :id_etudiant";
-        $db = Config::getConnexion();
-        try {
-            $query = $db->prepare($sql);
-            $query->bindValue(':id_etudiant', $id_etudiant);
-            $query->execute();
-            $etudiant = $query->fetch();
-            return $etudiant;
-        } catch (Exception $e) {
-            die('Error: ' . $e->getMessage());
-        }
-    }
-
-    // Mettre à jour un étudiant
-    public function updateEtudiant($etudiant, $id_etudiant) {
-        try {
-            $db = Config::getConnexion();
-            $query = $db->prepare(
-                'UPDATE etudiants SET 
-                    nom = :nom,
-                    prenom = :prenom,
-                    email = :email,
-                    mot_de_passe = :mot_de_passe,
-                    date_naissance = :date_naissance,
-                    cv = :cv,
-                    id_club = :id_club
-                WHERE id_etudiant = :id_etudiant'
-            );
-
-            $query->execute([
-                'id_etudiant' => $id_etudiant,
-                'nom' => $etudiant->getNom(),
-                'prenom' => $etudiant->getPrenom(),
-                'email' => $etudiant->getEmail(),
-                'mot_de_passe' => $etudiant->getMotDePasse(),
-                'date_naissance' => $etudiant->getDateNaissance(),
-                'cv' => $etudiant->getCv(),
-                'id_club' => $etudiant->getIdClub(),
-            ]);
-
-            echo $query->rowCount() . " enregistrement(s) mis à jour avec succès!";
-        } catch (PDOException $e) {
-            echo 'Error: ' . $e->getMessage();
+            $_SESSION['error'] = $e->getMessage();
+            header('Location: /profile/edit');
+            exit;
         }
     }
 }

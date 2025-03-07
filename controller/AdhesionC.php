@@ -1,90 +1,80 @@
 <?php
-require_once '../Config.php';
+require_once __DIR__ . '/../core/Database.php'; 
+require_once __DIR__ . '/../model/entite/Adhesion.php';
+require_once __DIR__ . '/../model/manager/AdhesionManager.php';
+require_once __DIR__ . '/../model/manager/EtudiantManager.php';
+require_once __DIR__ . '/../model/manager/ClubManager.php';
 
-class AdhesionC
-{
-    public function listAdhesions()
-    {
-        $sql = "SELECT * FROM adhesions";
-        $db = Database::getConnection();
-        try {
-            $liste = $db->query($sql);
-            return $liste;
-        } catch (Exception $e) {
-            die('Error: ' . $e->getMessage());
-        }
+class AdhesionC {
+    private $adhesionManager;
+    private $etudiantManager;
+    private $clubManager;
+
+    public function __construct() {
+        $this->adhesionManager = new AdhesionManager();
+        $this->etudiantManager = new EtudiantManager();
+        $this->clubManager = new ClubManager();
     }
-    public function showAdhesion($id_adhesion) 
-    {
-        return Adhesion::getAdhesionById($id_adhesion); 
-    }   
 
-    public function addAdhesion($adhesion)
-    {
-            $db = Database::getConnection();
-            $stmt = $db->prepare("SELECT id_etudiant FROM etudiants WHERE id_etudiant = ?");
-            $stmt->execute([$adhesion->getIdEtudiant()]);
-            
-            if (!$stmt->fetch()) {
-                die("Erreur : L'étudiant n'existe pas.");
-            }
-            $stmt2 = $db->prepare("SELECT id_club FROM clubs WHERE id_club = ?");
-            $stmt2->execute([$adhesion->getIdClub()]);
-            
-            if (!$stmt2->fetch()) {
-                die("Erreur : Le club n'existe pas.");
-            }
-        
-        
-        $sql = "INSERT INTO adhesions (id_etudiant, id_club) VALUES (:id_etudiant, :id_club)";
+    public function listAdhesions() {
         try {
-            $query = $db->prepare($sql);
-            $query->execute([
-                'id_etudiant' => $adhesion->getIdEtudiant(),
-                'id_club' => $adhesion->getIdClub(),
-            ]);
-
-            echo "Adhésion ajoutée avec succès!";
+            $adhesions = $this->adhesionManager->findAll();
+            include '../view/adhesion/listadhesion.php';
         } catch (Exception $e) {
-            echo 'Erreur' . $e->getMessage();
-            die ();
+            $this->handleError($e);
         }
     }
 
-    public function deleteAdhesion($id_etudiant, $id_club) {
-        $sql = "DELETE FROM adhesions WHERE id_etudiant = :id_etudiant AND id_club = :id_club";
-        $db = Database::getConnection();
-        $req = $db->prepare($sql);
-        $req->bindValue(':id_etudiant', $id_etudiant);
-        $req->bindValue(':id_club', $id_club);
-    
+    public function showAdhesion($id_adhesion) {
         try {
-            $req->execute();
-            echo "Adhésion supprimée avec succès !";
+            $adhesion = $this->adhesionManager->find($id_adhesion);
+            return $adhesion;
         } catch (Exception $e) {
-            die('Erreur: ' . $e->getMessage());
+            $this->handleError($e);
         }
     }
-    public function updateAdhesion($adhesion, $id_adhesion) {
-        $sql = "UPDATE adhesions 
-                SET id_etudiant = :id_etudiant, 
-                    id_club = :id_club, 
-                    statut = :statut 
-                WHERE id_adhesion = :id_adhesion";
-    
-        $db = Database::getConnection();
+
+    // Dans AdhesionC.php
+public function addAdhesion(Adhesion $adhesion) {
+    // Vérifie l'existence de l'étudiant
+    $etudiantManager = new EtudiantManager();
+    if (!$etudiantManager->exists($adhesion->getIdEtudiant())) {
+        throw new Exception("L'étudiant n'existe pas");
+    }
+
+    // Vérifie l'existence du club
+    $clubManager = new ClubManager();
+    if (!$clubManager->exists($adhesion->getIdClub())) {
+        throw new Exception("Le club n'existe pas");
+    }
+
+    // Crée l'adhésion
+    $this->adhesionManager->create($adhesion);
+}
+
+    public function deleteAdhesion($id_adhesion) {
         try {
-            $query = $db->prepare($sql);
-            $query->execute([
-                'id_etudiant' => $adhesion->getIdEtudiant(),
-                'id_club' => $adhesion->getIdClub(),
-                'statut' => $adhesion->getStatut(),
-                'id_adhesion' => $id_adhesion
-            ]);
-            echo "Statut mis à jour avec succès !";
+            $this->adhesionManager->delete($id_adhesion);
+            header("Location: listadhesion.php?success=Adhésion supprimée");
         } catch (Exception $e) {
-            die('Erreur: ' . $e->getMessage());
+            $this->handleError($e);
         }
+    }
+
+    public function updateAdhesion(Adhesion $adhesion) {
+        try {
+            $this->adhesionManager->update($adhesion);
+            header("Location: listadhesion.php?success=Adhésion mise à jour");
+        } catch (Exception $e) {
+            $this->handleError($e);
+        }
+    }
+
+    private function handleError(Exception $e) {
+        http_response_code(500);
+        error_log($e->getMessage()); // Log en production
+        header("Location: error.php?message=" . urlencode($e->getMessage()));
+        exit();
     }
 }
 ?>

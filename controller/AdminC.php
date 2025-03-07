@@ -1,52 +1,42 @@
 <?php
-require_once '../Config.php';
+// controller/AdminC.php
+require_once __DIR__ . '/../core/Database.php';
+require_once __DIR__ . '/../model/entite/Admin.php';
+require_once __DIR__ . '/../model/manager/AdminManager.php';
 
-class AdminC
-{
-    public function listAdmins()
-    {
-        $sql = "SELECT * FROM administrateurs";
-        $db = Config::getConnexion();
-        try {
-            $liste = $db->query($sql);
-            return $liste;
-        } catch (Exception $e) {
-            die('Error: ' . $e->getMessage());
+class AdminC {
+    public function login() {
+        session_start();
+        
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $pdo = Database::getConnection();
+            
+            // Récupération des données
+            $email = $_POST['email'];
+            $password = $_POST['password'];
+            
+            // Requête directe
+            $stmt = $pdo->prepare("SELECT * FROM admins WHERE email = ?");
+            $stmt->execute([$email]);
+            $admin = $stmt->fetch();
+            
+            if ($admin && password_verify($password, $admin['password'])) {
+                $_SESSION['admin_connected'] = true;
+                header('Location: index.php?action=admin_ok');
+                exit;
+            } else {
+                echo "Identifiants incorrects ou compte inexistant";
+            }
         }
+        
+        include 'view/admin/login.php';
+    }
     }
 
-    public function addAdmin($admin)
-    {
-        $sql = "INSERT INTO administrateurs (nom, email, mdp, role) 
-                VALUES (:nom, :email, :mdp, :role)";
-        $db = Config::getConnexion();
-        try {
-            $query = $db->prepare($sql);
-            $query->execute([
-                'nom' => $admin->getNom(),
-                'email' => $admin->getEmail(),
-                'mdp' => $admin->getMdp(),
-                'role' => $admin->getRole(),
-            ]);
-
-            echo "Administrateur ajouté avec succès!";
-        } catch (Exception $e) {
-            echo 'Erreur lors de l\'ajout de l\'administrateur: ' . $e->getMessage();
-        }
+    public function logout() {
+        session_unset();
+        session_destroy();
+        header('Location: index.php');
+        exit;
     }
-
-    public function deleteAdmin($id_admin)
-    {
-        $sql = "DELETE FROM administrateurs WHERE id_admin = :id_admin";
-        $db = Config::getConnexion();
-        $req = $db->prepare($sql);
-        $req->bindValue(':id_admin', $id_admin);
-
-        try {
-            $req->execute();
-        } catch (Exception $e) {
-            die('Error: ' . $e->getMessage());
-        }
-    }
-}
 ?>
