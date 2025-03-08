@@ -1,11 +1,17 @@
 <?php
 // C:\xampp\htdocs\projetweb-test\index.php
 
+// Désactiver l'affichage des erreurs à l'écran
+error_reporting(E_ALL & ~E_NOTICE);
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
+ini_set('error_log', 'C:/xampp/htdocs/projetweb-test/error.log');
 
 require_once 'controller/EtudiantController.php';
 require_once 'controller/AdminController.php';
 require_once 'controller/ClubController.php';
 require_once 'controller/AdhesionController.php';
+require_once 'controller/MembreController.php';
 
 $controller = isset($_GET['controller']) ? $_GET['controller'] : 'etudiant';
 $action = isset($_GET['action']) ? $_GET['action'] : 'list';
@@ -128,6 +134,32 @@ switch ($controller) {
                 break;
             default:
                 $adhesionController->list();
+        }
+        break;
+
+    case 'membre':
+        $membreController = new MembreController();
+        switch ($action) {
+            case 'list':
+                $membreController->list();
+                break;
+            case 'create':
+                $membreController->create();
+                break;
+            case 'store':
+                $membreController->store();
+                break;
+            case 'edit':
+                $membreController->edit($id);
+                break;
+            case 'update':
+                $membreController->update($id);
+                break;
+            case 'delete':
+                $membreController->delete($id);
+                break;
+            default:
+                $membreController->list();
         }
         break;
 

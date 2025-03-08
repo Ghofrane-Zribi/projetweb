@@ -3,11 +3,6 @@
     header('Location: ../../index.php?controller=admin&action=dashboard');
     exit;
 }
-session_start();
-if (!isset($_SESSION['admin_id'])) {
-    header('Location: ?controller=admin&action=login');
-    exit;
-}
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -16,6 +11,11 @@ if (!isset($_SESSION['admin_id'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tableau de bord Admin</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .progress-bar {
+            transition: width 0.6s ease;
+        }
+    </style>
 </head>
 <body>
     <div class="container mt-5">
@@ -26,12 +26,63 @@ if (!isset($_SESSION['admin_id'])) {
             <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
         <?php endif; ?>
 
-        <!-- Statistique globale : Nombre total d'étudiants -->
-        <div class="card mb-4">
-            <div class="card-body">
-                <h5 class="card-title">Nombre total d'étudiants</h5>
-                <p class="card-text"><?= htmlspecialchars($totalEtudiants) ?></p>
+        <!-- Statistiques globales -->
+        <h2 class="mb-3">Statistiques globales</h2>
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Nombre total d'étudiants</h5>
+                        <p class="card-text"><?= htmlspecialchars($totalEtudiants) ?></p>
+                    </div>
+                </div>
             </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Nombre total de clubs</h5>
+                        <p class="card-text"><?= htmlspecialchars($totalClubs) ?></p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Nombre total de demandes d'adhésion</h5>
+                        <p class="card-text"><?= htmlspecialchars($totalAdhesions) ?></p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Taux d'acceptation global</h5>
+                        <div class="progress">
+                            <div class="progress-bar bg-success" role="progressbar" 
+                                 style="width: <?= htmlspecialchars(round($tauxAcceptationGlobal, 2)) ?>%" 
+                                 aria-valuenow="<?= htmlspecialchars(round($tauxAcceptationGlobal, 2)) ?>" 
+                                 aria-valuemin="0" aria-valuemax="100">
+                                <?= htmlspecialchars(round($tauxAcceptationGlobal, 2)) ?>%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Répartition des rôles (globale) -->
+        <h2 class="mb-3">Répartition des rôles</h2>
+        <div class="row mb-4">
+            <?php foreach ($repartitionRoles as $role => $count): ?>
+                <div class="col-md-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title"><?= htmlspecialchars(ucfirst($role)) ?>s</h5>
+                            <p class="card-text"><?= htmlspecialchars($count) ?></p>
+                        </div>
+                    </div>
+                </div>
+            <?php endforeach; ?>
         </div>
 
         <!-- Statistiques par club -->
@@ -47,6 +98,32 @@ if (!isset($_SESSION['admin_id'])) {
                                 <h5 class="card-title"><?= htmlspecialchars($club->getNomClub()) ?></h5>
                                 <p class="card-text">Nombre d'étudiants inscrits : <?= htmlspecialchars($statsEtudiantsParClub[$club->getIdClub()] ?? 0) ?></p>
                                 <p class="card-text">Nombre total de demandes d'adhésion : <?= htmlspecialchars($statsDemandesParClub[$club->getIdClub()] ?? 0) ?></p>
+                                <p class="card-text">Taux d'acceptation :
+                                    <div class="progress">
+                                        <div class="progress-bar bg-info" role="progressbar" 
+                                             style="width: <?= htmlspecialchars(round($tauxAcceptationParClub[$club->getIdClub()], 2)) ?>%" 
+                                             aria-valuenow="<?= htmlspecialchars(round($tauxAcceptationParClub[$club->getIdClub()], 2)) ?>" 
+                                             aria-valuemin="0" aria-valuemax="100">
+                                            <?= htmlspecialchars(round($tauxAcceptationParClub[$club->getIdClub()], 2)) ?>%
+                                        </div>
+                                    </div>
+                                </p>
+                                <h6>bureau :</h6>
+                                <ul>
+                                    <?php $roles = $nomsRolesParClub[$club->getIdClub()]; ?>
+                                    <?php if ($roles['président']): ?>
+                                        <li>Président : <?= htmlspecialchars($roles['président']) ?></li>
+                                    <?php endif; ?>
+                                    <?php if ($roles['trésorier']): ?>
+                                        <li>Trésorier : <?= htmlspecialchars($roles['trésorier']) ?></li>
+                                    <?php endif; ?>
+                                    <?php if ($roles['secrétaire']): ?>
+                                        <li>Secrétaire : <?= htmlspecialchars($roles['secrétaire']) ?></li>
+                                    <?php endif; ?>
+                                    <?php if ($roles['membre'] > 0): ?>
+                                        <li>Membres : <?= htmlspecialchars($roles['membre']) ?></li>
+                                    <?php endif; ?>
+                                </ul>
                             </div>
                         </div>
                     </div>
@@ -54,6 +131,7 @@ if (!isset($_SESSION['admin_id'])) {
             </div>
         <?php endif; ?>
 
+        <a href="?controller=membre&action=list" class="btn btn-primary mt-3">Gérer les membres</a>
         <a href="?controller=admin&action=list" class="btn btn-secondary mt-3">Retour à la liste des admins</a>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>

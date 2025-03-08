@@ -10,12 +10,14 @@ class AdminController {
     private $clubManager;
     private $adhesionManager;
     private $etudiantManager;
+    private $membreManager;
 
     public function __construct() {
         $this->adminManager = new AdminManager();
         $this->clubManager = new ClubManager();
         $this->adhesionManager = new AdhesionManager();
         $this->etudiantManager = new EtudiantManager();
+        $this->membreManager = new MembreManager();
     }
 
     public function list() {
@@ -177,7 +179,7 @@ class AdminController {
             $admin = $this->adminManager->findByEmail($email);
             if ($admin && password_verify($password, $admin->getPasswordHash())) {
                 $_SESSION['admin_id'] = $admin->getIdAdmin();
-                header('Location: ?controller=admin&action=list');
+                header('Location: ?controller=admin&action=dashboard');
                 exit;
             } else {
                 $error = "Email ou mot de passe incorrect.";
@@ -210,13 +212,27 @@ class AdminController {
             $clubs = $this->clubManager->findAll();
             $adhesions = $this->adhesionManager->findAll();
             $etudiants = $this->etudiantManager->findAll();
+            $membres = $this->membreManager->findAll();
 
-            // Statistiques : Nombre d'étudiants par club
+            // Statistique globale : Nombre total d'étudiants
+            $totalEtudiants = count($etudiants);
+
+            // Statistique globale : Nombre total de clubs
+            $totalClubs = count($clubs);
+
+            // Statistique globale : Nombre total d'adhésions
+            $totalAdhesions = count($adhesions);
+
+            // Statistique globale : Taux d'acceptation global
+            $adhesionsAcceptees = array_filter($adhesions, fn($a) => $a->getStatut() == 'accepté');
+            $tauxAcceptationGlobal = $totalAdhesions > 0 ? (count($adhesionsAcceptees) / $totalAdhesions) * 100 : 0;
+
+            // Statistiques : Nombre d'étudiants par club (via la table membres)
             $statsEtudiantsParClub = [];
             foreach ($clubs as $club) {
                 $nbEtudiants = 0;
-                foreach ($adhesions as $adhesion) {
-                    if ($adhesion->getIdClub() == $club->getIdClub() && $adhesion->getStatut() == 'accepté') {
+                foreach ($membres as $membre) {
+                    if ($membre->getIdClub() == $club->getIdClub()) {
                         $nbEtudiants++;
                     }
                 }
@@ -235,8 +251,48 @@ class AdminController {
                 $statsDemandesParClub[$club->getIdClub()] = $nbDemandes;
             }
 
-            // Statistique globale : Nombre total d'étudiants
-            $totalEtudiants = count($etudiants);
+            // Statistiques : Taux d'acceptation par club
+            $tauxAcceptationParClub = [];
+            foreach ($clubs as $club) {
+                $adhesionsClub = array_filter($adhesions, fn($a) => $a->getIdClub() == $club->getIdClub());
+                $adhesionsAccepteesClub = array_filter($adhesionsClub, fn($a) => $a->getStatut() == 'accepté');
+                $totalAdhesionsClub = count($adhesionsClub);
+                $tauxAcceptationParClub[$club->getIdClub()] = $totalAdhesionsClub > 0 ? (count($adhesionsAccepteesClub) / $totalAdhesionsClub) * 100 : 0;
+            }
+
+            // Statistiques : Rôles par club (on récupère les noms des étudiants pour chaque rôle)
+            $nomsRolesParClub = [];
+            foreach ($clubs as $club) {
+                $roles = [
+                    'président' => null,
+                    'trésorier' => null,
+                    'secrétaire' => null,
+                    'membre' => 0 // On garde un compteur pour les membres simples
+                ];
+                foreach ($membres as $membre) {
+                    if ($membre->getIdClub() == $club->getIdClub()) {
+                        $etudiant = array_filter($etudiants, fn($e) => $e->getIdEtudiant() == $membre->getIdEtudiant());
+                        $etudiant = reset($etudiant);
+                        $nomComplet = $etudiant ? $etudiant->getNom() . ' ' . $etudiant->getPrenom() : 'Inconnu';
+                        $role = $membre->getRole();
+                        if ($role == 'membre') {
+                            $roles['membre']++;
+                        } else {
+                            $roles[$role] = $nomComplet; // On stocke le nom pour président, trésorier, secrétaire
+                        }
+                    }
+                }
+                $nomsRolesParClub[$club->getIdClub()] = $roles;
+            }
+
+            // Statistique globale : Répartition des rôles (on garde les compteurs ici)
+            $repartitionRoles = ['membre' => 0, 'président' => 0, 'trésorier' => 0, 'secrétaire' => 0];
+            foreach ($membres as $membre) {
+                $role = $membre->getRole();
+                if (isset($repartitionRoles[$role])) {
+                    $repartitionRoles[$role]++;
+                }
+            }
 
             require 'view/admin/dashboard.php';
         } catch (Exception $e) {

@@ -3,7 +3,6 @@
     header('Location: ../../index.php?controller=etudiant&action=login');
     exit;
 }
-session_start();
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -25,7 +24,7 @@ session_start();
             <div class="mb-3">
                 <label for="email" class="form-label">Email :</label>
                 <input type="email" class="form-control" id="email" name="email" required>
-                <div class="invalid-feedback">Veuillez entrer un email valide.</div>
+                <div class="invalid-feedback">Veuillez entrer une adresse email valide.</div>
             </div>
             <div class="mb-3">
                 <label for="mot_de_passe" class="form-label">Mot de passe :</label>
@@ -33,6 +32,7 @@ session_start();
                 <div class="invalid-feedback">Veuillez entrer un mot de passe.</div>
             </div>
             <button type="submit" class="btn btn-primary">Se connecter</button>
+            <a href="?controller=etudiant&action=create" class="btn btn-success ms-2">S'inscrire</a>
         </form>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
