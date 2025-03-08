@@ -14,7 +14,7 @@ class EtudiantManager {
     }
 
     public function create(Etudiant $etudiant) {
-        echo "<pre>DEBUG: Tentative d'ajout d'un étudiant</pre>";
+        //echo "<pre>DEBUG: Tentative d'ajout d'un étudiant</pre>";
         $stmt = $this->pdo->prepare("
             INSERT INTO etudiants (nom, prenom, email, mot_de_passe, date_naissance, cv) 
             VALUES (:nom, :prenom, :email, :mot_de_passe, :date_naissance, :cv)
@@ -28,19 +28,19 @@ class EtudiantManager {
             ':date_naissance' => $etudiant->getDateNaissance(),
             ':cv' => $etudiant->getCv()
         ];
-        echo "<pre>DEBUG: Paramètres d'insertion : "; var_dump($params); echo "</pre>";
+        //echo "<pre>DEBUG: Paramètres d'insertion : "; var_dump($params); echo "</pre>";
         $stmt->execute($params);
         $id = $this->pdo->lastInsertId();
-        echo "<pre>DEBUG: Étudiant créé avec ID : $id</pre>";
+        //echo "<pre>DEBUG: Étudiant créé avec ID : $id</pre>";
         return $id;
     }
 
     public function findById($id_etudiant) {
-        echo "<pre>DEBUG: Recherche de l'étudiant ID : $id_etudiant</pre>";
+        //echo "<pre>DEBUG: Recherche de l'étudiant ID : $id_etudiant</pre>";
         $stmt = $this->pdo->prepare("SELECT * FROM etudiants WHERE id_etudiant = :id");
         $stmt->execute([':id' => $id_etudiant]);
         $data = $stmt->fetch();
-        echo "<pre>DEBUG: Résultat brut pour ID $id_etudiant : "; var_dump($data); echo "</pre>";
+        //echo "<pre>DEBUG: Résultat brut pour ID $id_etudiant : "; var_dump($data); echo "</pre>";
         if ($data) {
             return new Etudiant(
                 $data->id_etudiant,
@@ -56,11 +56,11 @@ class EtudiantManager {
     }
 
     public function findByEmail($email) {
-        echo "<pre>DEBUG: Recherche par email : $email</pre>";
+        //echo "<pre>DEBUG: Recherche par email : $email</pre>";
         $stmt = $this->pdo->prepare("SELECT * FROM etudiants WHERE email = :email");
         $stmt->execute([':email' => $email]);
         $data = $stmt->fetch();
-        echo "<pre>DEBUG: Résultat brut pour email $email : "; var_dump($data); echo "</pre>";
+        //echo "<pre>DEBUG: Résultat brut pour email $email : "; var_dump($data); echo "</pre>";
         if ($data) {
             return new Etudiant(
                 $data->id_etudiant,
@@ -76,7 +76,7 @@ class EtudiantManager {
     }
 
     public function findAll() {
-        echo "<pre>DEBUG: Récupération de tous les étudiants</pre>";
+        //echo "<pre>DEBUG: Récupération de tous les étudiants</pre>";
         $stmt = $this->pdo->query("SELECT * FROM etudiants");
         $etudiants = [];
         while ($data = $stmt->fetch()) {
@@ -90,12 +90,12 @@ class EtudiantManager {
                 $data->cv
             );
         }
-        echo "<pre>DEBUG: Étudiants récupérés : "; var_dump($etudiants); echo "</pre>";
+        //echo "<pre>DEBUG: Étudiants récupérés : "; var_dump($etudiants); echo "</pre>";
         return $etudiants;
     }
 
     public function update(Etudiant $etudiant) {
-        echo "<pre>DEBUG: Mise à jour de l'étudiant ID : " . $etudiant->getIdEtudiant() . "</pre>";
+        //echo "<pre>DEBUG: Mise à jour de l'étudiant ID : " . $etudiant->getIdEtudiant() . "</pre>";
         $stmt = $this->pdo->prepare("
             UPDATE etudiants 
             SET nom = :nom, prenom = :prenom, email = :email, mot_de_passe = :mot_de_passe, 
@@ -111,19 +111,19 @@ class EtudiantManager {
             ':date_naissance' => $etudiant->getDateNaissance(),
             ':cv' => $etudiant->getCv()
         ];
-        echo "<pre>DEBUG: Paramètres de mise à jour : "; var_dump($params); echo "</pre>";
+        //echo "<pre>DEBUG: Paramètres de mise à jour : "; var_dump($params); echo "</pre>";
         $stmt->execute($params);
         $count = $stmt->rowCount();
-        echo "<pre>DEBUG: Nombre de lignes mises à jour : $count</pre>";
+        //echo "<pre>DEBUG: Nombre de lignes mises à jour : $count</pre>";
         return $count;
     }
 
     public function delete($id_etudiant) {
-        echo "<pre>DEBUG: Suppression de l'étudiant ID : $id_etudiant</pre>";
+        //echo "<pre>DEBUG: Suppression de l'étudiant ID : $id_etudiant</pre>";
         $stmt = $this->pdo->prepare("DELETE FROM etudiants WHERE id_etudiant = :id");
         $stmt->execute([':id' => $id_etudiant]);
         $count = $stmt->rowCount();
-        echo "<pre>DEBUG: Nombre de lignes supprimées : $count</pre>";
+        //echo "<pre>DEBUG: Nombre de lignes supprimées : $count</pre>";
         return $count;
     }
 }

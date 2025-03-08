@@ -1,12 +1,21 @@
 <?php
 // C:\xampp\htdocs\projetweb-test\controller\AdminController.php
 require_once 'model/manager/AdminManager.php';
+require_once 'model/manager/ClubManager.php';
+require_once 'model/manager/AdhesionManager.php';
+require_once 'model/manager/EtudiantManager.php';
 
 class AdminController {
-    private $manager;
+    private $adminManager;
+    private $clubManager;
+    private $adhesionManager;
+    private $etudiantManager;
 
     public function __construct() {
-        $this->manager = new AdminManager();
+        $this->adminManager = new AdminManager();
+        $this->clubManager = new ClubManager();
+        $this->adhesionManager = new AdhesionManager();
+        $this->etudiantManager = new EtudiantManager();
     }
 
     public function list() {
@@ -17,7 +26,7 @@ class AdminController {
         }
 
         try {
-            $admins = $this->manager->findAll();
+            $admins = $this->adminManager->findAll();
             require 'view/admin/list.php';
         } catch (Exception $e) {
             $error = "Erreur lors de la récupération des admins : " . $e->getMessage();
@@ -50,7 +59,7 @@ class AdminController {
                 return;
             }
 
-            if ($this->manager->findByEmail($email)) {
+            if ($this->adminManager->findByEmail($email)) {
                 $error = "Cet email est déjà utilisé.";
                 require 'view/admin/create.php';
                 return;
@@ -58,7 +67,7 @@ class AdminController {
 
             try {
                 $admin = new Admin(null, $email, $password);
-                $this->manager->create($admin);
+                $this->adminManager->create($admin);
                 header('Location: ?controller=admin&action=list');
                 exit;
             } catch (Exception $e) {
@@ -77,7 +86,7 @@ class AdminController {
             header('Location: ?controller=admin&action=login');
             exit;
         }
-        $admin = $this->manager->findById($id);
+        $admin = $this->adminManager->findById($id);
         if (!$admin) {
             $error = "Admin non trouvé.";
             require 'view/admin/edit.php';
@@ -93,7 +102,7 @@ class AdminController {
             exit;
         }
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $admin = $this->manager->findById($id);
+            $admin = $this->adminManager->findById($id);
             if (!$admin) {
                 $error = "Admin non trouvé.";
                 require 'view/admin/edit.php';
@@ -109,7 +118,7 @@ class AdminController {
                 return;
             }
 
-            $existing = $this->manager->findByEmail($email);
+            $existing = $this->adminManager->findByEmail($email);
             if ($existing && $existing->getIdAdmin() != $id) {
                 $error = "Cet email est déjà utilisé par un autre admin.";
                 require 'view/admin/edit.php';
@@ -121,7 +130,7 @@ class AdminController {
                 if (!empty($password)) {
                     $admin->setPasswordHash($password);
                 }
-                $this->manager->update($admin);
+                $this->adminManager->update($admin);
                 header('Location: ?controller=admin&action=list');
                 exit;
             } catch (Exception $e) {
@@ -141,9 +150,9 @@ class AdminController {
             exit;
         }
         try {
-            $admin = $this->manager->findById($id);
+            $admin = $this->adminManager->findById($id);
             if ($admin) {
-                $this->manager->delete($id);
+                $this->adminManager->delete($id);
             }
             header('Location: ?controller=admin&action=list');
             exit;
@@ -165,7 +174,7 @@ class AdminController {
                 return;
             }
 
-            $admin = $this->manager->findByEmail($email);
+            $admin = $this->adminManager->findByEmail($email);
             if ($admin && password_verify($password, $admin->getPasswordHash())) {
                 $_SESSION['admin_id'] = $admin->getIdAdmin();
                 header('Location: ?controller=admin&action=list');
@@ -176,7 +185,7 @@ class AdminController {
             }
         } else {
             if (isset($_SESSION['admin_id'])) {
-                header('Location: ?controller=admin&action=list');//direction apres login
+                header('Location: ?controller=admin&action=dashboard');
                 exit;
             }
             require 'view/admin/login.php';
@@ -188,6 +197,52 @@ class AdminController {
         session_destroy();
         header('Location: ?controller=admin&action=login');
         exit;
+    }
+
+    public function dashboard() {
+        session_start();
+        if (!isset($_SESSION['admin_id'])) {
+            header('Location: ?controller=admin&action=login');
+            exit;
+        }
+
+        try {
+            $clubs = $this->clubManager->findAll();
+            $adhesions = $this->adhesionManager->findAll();
+            $etudiants = $this->etudiantManager->findAll();
+
+            // Statistiques : Nombre d'étudiants par club
+            $statsEtudiantsParClub = [];
+            foreach ($clubs as $club) {
+                $nbEtudiants = 0;
+                foreach ($adhesions as $adhesion) {
+                    if ($adhesion->getIdClub() == $club->getIdClub() && $adhesion->getStatut() == 'accepté') {
+                        $nbEtudiants++;
+                    }
+                }
+                $statsEtudiantsParClub[$club->getIdClub()] = $nbEtudiants;
+            }
+
+            // Statistiques : Nombre de demandes d'adhésion par club
+            $statsDemandesParClub = [];
+            foreach ($clubs as $club) {
+                $nbDemandes = 0;
+                foreach ($adhesions as $adhesion) {
+                    if ($adhesion->getIdClub() == $club->getIdClub()) {
+                        $nbDemandes++;
+                    }
+                }
+                $statsDemandesParClub[$club->getIdClub()] = $nbDemandes;
+            }
+
+            // Statistique globale : Nombre total d'étudiants
+            $totalEtudiants = count($etudiants);
+
+            require 'view/admin/dashboard.php';
+        } catch (Exception $e) {
+            $error = "Erreur lors de la récupération des données pour le tableau de bord : " . $e->getMessage();
+            require 'view/admin/dashboard.php';
+        }
     }
 }
 ?>

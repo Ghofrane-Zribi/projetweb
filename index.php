@@ -1,13 +1,11 @@
 <?php
 // C:\xampp\htdocs\projetweb-test\index.php
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+
 
 require_once 'controller/EtudiantController.php';
 require_once 'controller/AdminController.php';
 require_once 'controller/ClubController.php';
 require_once 'controller/AdhesionController.php';
-
 
 $controller = isset($_GET['controller']) ? $_GET['controller'] : 'etudiant';
 $action = isset($_GET['action']) ? $_GET['action'] : 'list';
@@ -73,7 +71,9 @@ switch ($controller) {
             case 'logout':
                 $adminController->logout();
                 break;
-                    
+            case 'dashboard':
+                $adminController->dashboard();
+                break;
             default:
                 $adminController->list();
         }
@@ -130,8 +130,6 @@ switch ($controller) {
                 $adhesionController->list();
         }
         break;
-
-    
 
     default:
         $etudiantController = new EtudiantController();
