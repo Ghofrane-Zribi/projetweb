@@ -35,6 +35,12 @@ switch ($controller) {
             case 'delete':
                 $etudiantController->delete($id);
                 break;
+            case 'login':
+                $etudiantController->login();
+                break;
+            case 'logout':
+                $etudiantController->logout();
+                break;
             default:
                 $etudiantController->list();
         }
@@ -63,9 +69,6 @@ switch ($controller) {
                 break;
             case 'login':
                 $adminController->login();
-                break;
-            case 'authenticate':
-                $adminController->authenticate();
                 break;
             case 'logout':
                 $adminController->logout();

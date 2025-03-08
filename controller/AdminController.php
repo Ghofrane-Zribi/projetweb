@@ -1,8 +1,6 @@
 <?php
 // C:\xampp\htdocs\projetweb-test\controller\AdminController.php
 require_once 'model/manager/AdminManager.php';
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
 
 class AdminController {
     private $manager;
@@ -12,6 +10,12 @@ class AdminController {
     }
 
     public function list() {
+        session_start();
+        if (!isset($_SESSION['admin_id'])) {
+            header('Location: ?controller=admin&action=login');
+            exit;
+        }
+
         try {
             $admins = $this->manager->findAll();
             require 'view/admin/list.php';
@@ -22,10 +26,20 @@ class AdminController {
     }
 
     public function create() {
+        session_start();
+        if (!isset($_SESSION['admin_id'])) {
+            header('Location: ?controller=admin&action=login');
+            exit;
+        }
         require 'view/admin/create.php';
     }
 
     public function store() {
+        session_start();
+        if (!isset($_SESSION['admin_id'])) {
+            header('Location: ?controller=admin&action=login');
+            exit;
+        }
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $email = filter_input(INPUT_POST, 'email', FILTER_VALIDATE_EMAIL);
             $password = $_POST['password'];
@@ -58,6 +72,11 @@ class AdminController {
     }
 
     public function edit($id) {
+        session_start();
+        if (!isset($_SESSION['admin_id'])) {
+            header('Location: ?controller=admin&action=login');
+            exit;
+        }
         $admin = $this->manager->findById($id);
         if (!$admin) {
             $error = "Admin non trouvé.";
@@ -68,6 +87,11 @@ class AdminController {
     }
 
     public function update($id) {
+        session_start();
+        if (!isset($_SESSION['admin_id'])) {
+            header('Location: ?controller=admin&action=login');
+            exit;
+        }
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $admin = $this->manager->findById($id);
             if (!$admin) {
@@ -111,6 +135,11 @@ class AdminController {
     }
 
     public function delete($id) {
+        session_start();
+        if (!isset($_SESSION['admin_id'])) {
+            header('Location: ?controller=admin&action=login');
+            exit;
+        }
         try {
             $admin = $this->manager->findById($id);
             if ($admin) {
@@ -123,49 +152,42 @@ class AdminController {
             require 'view/admin/list.php';
         }
     }
-   
+
     public function login() {
-        $errorMessage = $_SESSION['errorMessage'] ?? null;
-        unset($_SESSION['errorMessage']); // Supprimer le message après affichage
+        session_start();
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $email = filter_input(INPUT_POST, 'email', FILTER_VALIDATE_EMAIL);
+            $password = $_POST['password'];
 
-        require_once 'view/admin/login.php';
-    }
+            if (!$email || !$password) {
+                $error = "Email et mot de passe sont obligatoires.";
+                require 'view/admin/login.php';
+                return;
+            }
 
-    public function authenticate() {
-        if ($_SERVER["REQUEST_METHOD"] == "POST") {
-            $email = $_POST['email'] ?? '';
-            $password = $_POST['password'] ?? '';
-    
-            $adminManager = new AdminManager();
-            $admin = $adminManager->getAdminByEmail($email);
-    
-            if (!$admin) {
-                $_SESSION['errorMessage'] = "Email incorrect.";
-                header("Location: index.php?controller=admin&action=login");
-                exit();
+            $admin = $this->manager->findByEmail($email);
+            if ($admin && password_verify($password, $admin->getPasswordHash())) {
+                $_SESSION['admin_id'] = $admin->getIdAdmin();
+                header('Location: ?controller=admin&action=list');
+                exit;
+            } else {
+                $error = "Email ou mot de passe incorrect.";
+                require 'view/admin/login.php';
             }
-    
-            if (!password_verify($password, $admin['password'])) {
-                $_SESSION['errorMessage'] = "Mot de passe incorrect.";
-                header("Location: index.php?controller=admin&action=login");
-                exit();
+        } else {
+            if (isset($_SESSION['admin_id'])) {
+                header('Location: ?controller=admin&action=list');//direction apres login
+                exit;
             }
-    
-            // Déboguer avant de rediriger
-            var_dump($admin);
-            exit();
-    
-            $_SESSION['admin'] = $admin;
-            header("Location: index.php?controller=etudiant&action=list");
-            exit();
+            require 'view/admin/login.php';
         }
     }
-    
 
     public function logout() {
+        session_start();
         session_destroy();
-        header("Location: index.php?controller=admin&action=login");
-        exit();
+        header('Location: ?controller=admin&action=login');
+        exit;
     }
 }
 ?>

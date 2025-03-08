@@ -2,7 +2,13 @@
 <?php if (!isset($_GET['controller']) || !isset($_GET['action'])) {
     header('Location: ../../index.php?controller=admin&action=list');
     exit;
-} ?>
+}
+session_start();
+if (!isset($_SESSION['admin_id'])) {
+    header('Location: ?controller=admin&action=login');
+    exit;
+}
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>

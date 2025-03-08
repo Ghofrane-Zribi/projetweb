@@ -2,7 +2,13 @@
 <?php if (!isset($_GET['controller']) || !isset($_GET['action'])) {
     header('Location: ../../index.php?controller=admin&action=list');
     exit;
-} ?>
+}
+session_start();
+if (!isset($_SESSION['admin_id'])) {
+    header('Location: ?controller=admin&action=login');
+    exit;
+}
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -14,6 +20,7 @@
 <body>
     <div class="container mt-5">
         <h1 class="mb-4">Liste des admins</h1>
+        <a href="?controller=admin&action=logout" class="btn btn-danger mb-3">Se déconnecter</a>
 
         <?php if (isset($error)): ?>
             <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
