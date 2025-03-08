@@ -1,6 +1,7 @@
 <?php
-require_once __DIR__ . '/../../core/Database.php';
-require_once __DIR__ . '/../entite/Club.php';
+// C:\xampp\htdocs\projetweb-test\model\manager\ClubManager.php
+require_once 'model/entite/Club.php';
+require_once 'core/Database.php';
 
 class ClubManager {
     private $pdo;
@@ -9,71 +10,93 @@ class ClubManager {
         $this->pdo = Database::getConnection();
     }
 
-    // Récupère tous les clubs
-    public function findAll() {
-        $stmt = $this->pdo->query("
-            SELECT 
-                id_club AS id,
-                nom_club AS nom,
-                date_creation AS dateCreation,
-                description,
-                reseaux_sociaux AS reseauxSociaux,
-                logo
-            FROM clubs
-        ");
-        return $stmt->fetchAll(PDO::FETCH_CLASS, 'Club');
-    }
-
-    // Crée un nouveau club
     public function create(Club $club) {
-        $sql = "INSERT INTO clubs 
-                (nom_club, date_creation, description, reseaux_sociaux, logo)
-                VALUES (:nom, :date, :desc, :rs, :logo)";
-        
-        $stmt = $this->pdo->prepare($sql);
+        $stmt = $this->pdo->prepare("
+            INSERT INTO clubs (nom_club, date_creation, description, reseaux_sociaux, logo) 
+            VALUES (:nom_club, :date_creation, :description, :reseaux_sociaux, :logo)
+        ");
         $stmt->execute([
-            ':nom' => $club->getNom(),
-            ':date' => $club->getDateCreation(),
-            ':desc' => $club->getDescription(),
-            ':rs' => $club->getReseauxSociaux(),
+            ':nom_club' => $club->getNomClub(),
+            ':date_creation' => $club->getDateCreation(),
+            ':description' => $club->getDescription(),
+            ':reseaux_sociaux' => $club->getReseauxSociaux(),
             ':logo' => $club->getLogo()
         ]);
-        
         return $this->pdo->lastInsertId();
     }
 
-    // Supprime un club
-    public function delete($id) {
-        $stmt = $this->pdo->prepare("DELETE FROM clubs WHERE id_club = ?");
-        $stmt->execute([$id]);
+    public function findById($id_club) {
+        $stmt = $this->pdo->prepare("SELECT * FROM clubs WHERE id_club = :id");
+        $stmt->execute([':id' => $id_club]);
+        $data = $stmt->fetch();
+        if ($data) {
+            return new Club(
+                $data->id_club,
+                $data->nom_club,
+                $data->date_creation,
+                $data->description,
+                $data->reseaux_sociaux,
+                $data->logo
+            );
+        }
+        return null;
     }
 
-    // Met à jour un club
+    public function findByNomClub($nom_club) {
+        $stmt = $this->pdo->prepare("SELECT * FROM clubs WHERE nom_club = :nom_club");
+        $stmt->execute([':nom_club' => $nom_club]);
+        $data = $stmt->fetch();
+        if ($data) {
+            return new Club(
+                $data->id_club,
+                $data->nom_club,
+                $data->date_creation,
+                $data->description,
+                $data->reseaux_sociaux,
+                $data->logo
+            );
+        }
+        return null;
+    }
+
+    public function findAll() {
+        $stmt = $this->pdo->query("SELECT * FROM clubs");
+        $clubs = [];
+        while ($data = $stmt->fetch()) {
+            $clubs[] = new Club(
+                $data->id_club,
+                $data->nom_club,
+                $data->date_creation,
+                $data->description,
+                $data->reseaux_sociaux,
+                $data->logo
+            );
+        }
+        return $clubs;
+    }
+
     public function update(Club $club) {
-        $sql = "UPDATE clubs SET
-                nom_club = :nom,
-                date_creation = :date,
-                description = :desc,
-                reseaux_sociaux = :rs,
-                logo = :logo
-                WHERE id_club = :id";
-        
-        $stmt = $this->pdo->prepare($sql);
+        $stmt = $this->pdo->prepare("
+            UPDATE clubs 
+            SET nom_club = :nom_club, date_creation = :date_creation, description = :description, 
+                reseaux_sociaux = :reseaux_sociaux, logo = :logo 
+            WHERE id_club = :id
+        ");
         $stmt->execute([
-            ':id' => $club->getId(),
-            ':nom' => $club->getNom(),
-            ':date' => $club->getDateCreation(),
-            ':desc' => $club->getDescription(),
-            ':rs' => $club->getReseauxSociaux(),
+            ':id' => $club->getIdClub(),
+            ':nom_club' => $club->getNomClub(),
+            ':date_creation' => $club->getDateCreation(),
+            ':description' => $club->getDescription(),
+            ':reseaux_sociaux' => $club->getReseauxSociaux(),
             ':logo' => $club->getLogo()
         ]);
+        return $stmt->rowCount();
     }
 
-    // Vérifie l'existence d'un club
-    public function exists($id) {
-        $stmt = $this->pdo->prepare("SELECT 1 FROM clubs WHERE id_club = ?");
-        $stmt->execute([$id]);
-        return $stmt->fetchColumn();
+    public function delete($id_club) {
+        $stmt = $this->pdo->prepare("DELETE FROM clubs WHERE id_club = :id");
+        $stmt->execute([':id' => $id_club]);
+        return $stmt->rowCount();
     }
 }
 ?>

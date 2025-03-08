@@ -1,51 +1,28 @@
 <?php
-// model/entite/Admin.php
+// C:\xampp\htdocs\projetweb-test\model\entite\Admin.php
 class Admin {
     private $id_admin;
-    private $nom;
     private $email;
-    private $password;
+    private $password_hash;
     private $created_at;
 
-    public function hydrate(array $data) {
-        foreach ($data as $key => $value) {
-            $method = 'set'.ucfirst($key);
-            if (method_exists($this, $method)) {
-                $this->$method($value);
-            }
-        }
+    public function __construct($id_admin = null, $email = '', $password_hash = '', $created_at = null) {
+        $this->id_admin = $id_admin;
+        $this->email = $email;
+        $this->password_hash = $password_hash;
+        $this->created_at = $created_at;
     }
 
     // Getters
     public function getIdAdmin() { return $this->id_admin; }
-    public function getNom() { return $this->nom; }
     public function getEmail() { return $this->email; }
-    public function getPassword() { return $this->password; }
+    public function getPasswordHash() { return $this->password_hash; }
     public function getCreatedAt() { return $this->created_at; }
 
-    // Setters avec validation
-    public function setId_admin($id) { $this->id_admin = (int)$id; }
-    
-    public function setNom($nom) { 
-        $this->nom = htmlspecialchars(trim($nom)); 
-    }
-    
-    public function setEmail($email) {
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            throw new InvalidArgumentException("Email invalide");
-        }
-        $this->email = $email;
-    }
-    
-    public function setPassword($password) {
-        if (strlen($password) < 8) {
-            throw new InvalidArgumentException("Le mot de passe doit contenir au moins 8 caractères");
-        }
-        $this->password = password_hash($password, PASSWORD_BCRYPT);
-    }
-    
-    public function setCreated_at($date) {
-        $this->created_at = $date;
-    }
+    // Setters
+    public function setIdAdmin($id_admin) { $this->id_admin = $id_admin; }
+    public function setEmail($email) { $this->email = $email; }
+    public function setPasswordHash($password_hash) { $this->password_hash = password_hash($password_hash, PASSWORD_BCRYPT); }
+    public function setCreatedAt($created_at) { $this->created_at = $created_at; }
 }
 ?>

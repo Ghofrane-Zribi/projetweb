@@ -1,38 +1,36 @@
 <?php
-require_once __DIR__ . '/../../core/Database.php';
-
+// C:\xampp\htdocs\projetweb-test\model\entite\Club.php
 class Club {
-    private $id;
-    private $nom;
-    private $dateCreation;
+    private $id_club;
+    private $nom_club;
+    private $date_creation;
     private $description;
-    private $reseauxSociaux;
+    private $reseaux_sociaux;
     private $logo;
 
-    // Hydratation depuis un tableau
-    public function hydrate(array $data) {
-        foreach ($data as $key => $value) {
-            $method = 'set' . ucfirst($key);
-            if (method_exists($this, $method)) {
-                $this->$method($value);
-            }
-        }
+    public function __construct($id_club = null, $nom_club = '', $date_creation = null, $description = '', $reseaux_sociaux = '', $logo = '') {
+        $this->id_club = $id_club;
+        $this->nom_club = $nom_club;
+        $this->date_creation = $date_creation;
+        $this->description = $description;
+        $this->reseaux_sociaux = $reseaux_sociaux;
+        $this->logo = $logo;
     }
 
     // Getters
-    public function getId() { return $this->id; }
-    public function getNom() { return $this->nom; }
-    public function getDateCreation() { return $this->dateCreation; }
+    public function getIdClub() { return $this->id_club; }
+    public function getNomClub() { return $this->nom_club; }
+    public function getDateCreation() { return $this->date_creation; }
     public function getDescription() { return $this->description; }
-    public function getReseauxSociaux() { return $this->reseauxSociaux; }
+    public function getReseauxSociaux() { return $this->reseaux_sociaux; }
     public function getLogo() { return $this->logo; }
 
     // Setters
-    public function setId($id) { $this->id = $id; }
-    public function setNom($nom) { $this->nom = $nom; }
-    public function setDateCreation($date) { $this->dateCreation = $date; }
-    public function setDescription($desc) { $this->description = $desc; }
-    public function setReseauxSociaux($rs) { $this->reseauxSociaux = $rs; }
+    public function setIdClub($id_club) { $this->id_club = $id_club; }
+    public function setNomClub($nom_club) { $this->nom_club = $nom_club; }
+    public function setDateCreation($date_creation) { $this->date_creation = $date_creation; }
+    public function setDescription($description) { $this->description = $description; }
+    public function setReseauxSociaux($reseaux_sociaux) { $this->reseaux_sociaux = $reseaux_sociaux; }
     public function setLogo($logo) { $this->logo = $logo; }
 }
 ?>

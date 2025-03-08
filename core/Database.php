@@ -1,5 +1,5 @@
 <?php
-// core/Database.php
+// C:\xampp\htdocs\projetweb-test\core\Database.php
 require_once 'Config.php';
 
 class Database {
@@ -26,7 +26,7 @@ class Database {
         }
     }
 
-    public static function getConnection(): PDO {
+    public static function getConnection() {
         if (self::$instance === null) {
             self::$instance = new self();
         }
