@@ -88,19 +88,29 @@ class AdminManager {
         $stmt->execute([':id' => $id_admin]);
         return $stmt->rowCount();
     }
+
     public function getAdminByEmail($email) {
         $stmt = $this->pdo->prepare("SELECT * FROM admins WHERE email = ?");
         $stmt->execute([$email]);
         $admin = $stmt->fetch(PDO::FETCH_ASSOC);
-    
         if (!$admin) {
             error_log("Aucun admin trouvé avec l'email : " . $email);
         }
-    
         return $admin;
     }
-    
-    
-    
+
+    public function login($email, $mot_de_passe) {
+        $admin = $this->findByEmail($email);
+        if ($admin && password_verify($mot_de_passe, $admin->getPasswordHash())) {
+            return $admin;
+        }
+        error_log("Échec de la connexion pour l'email : " . $email);
+        return null;
+    }
+
+    public function count() {
+        $stmt = $this->pdo->query("SELECT COUNT(*) FROM admins");
+        return $stmt->fetchColumn();
+    }
 }
 ?>

@@ -7,7 +7,7 @@ ini_set('display_errors', 0);
 ini_set('log_errors', 1);
 ini_set('error_log', 'C:/xampp/htdocs/projetweb-test/error.log');
 
-// Démarrer la session pour le BackofficeController
+// Ajouter session_start() pour gérer les sessions
 session_start();
 
 require_once 'controller/EtudiantController.php';
@@ -207,7 +207,7 @@ switch ($controller) {
                 $backofficeController->clubList();
                 break;
             case 'clubCreate':
-                $backofficeController->clubCreate();
+                $backofficeController->clubstore();
                 break;
             case 'clubEdit':
                 $backofficeController->clubEdit($id);

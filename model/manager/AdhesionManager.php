@@ -76,5 +76,10 @@ class AdhesionManager {
         $stmt->execute([':id' => $id_adhesion]);
         return $stmt->rowCount();
     }
+
+    public function count() {
+        $stmt = $this->pdo->query("SELECT COUNT(*) FROM adhesions");
+        return $stmt->fetchColumn();
+    }
 }
 ?>

@@ -108,5 +108,10 @@ class MembreManager {
         $stmt->execute([':id' => $id_membre]);
         return $stmt->rowCount();
     }
+
+    public function count() {
+        $stmt = $this->pdo->query("SELECT COUNT(*) FROM membres");
+        return $stmt->fetchColumn();
+    }
 }
 ?>

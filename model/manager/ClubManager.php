@@ -98,5 +98,10 @@ class ClubManager {
         $stmt->execute([':id' => $id_club]);
         return $stmt->rowCount();
     }
+
+    public function count() {
+        $stmt = $this->pdo->query("SELECT COUNT(*) FROM clubs");
+        return $stmt->fetchColumn();
+    }
 }
 ?>
