@@ -466,6 +466,50 @@ class BackofficeController {
             require_once 'view/backoffice/adhesion_create.php';
         }
     }
+    public function membrestore() {
+        session_start();
+        if (!isset($_SESSION['admin_id'])) {
+            header('Location: ?controller=backoffice&action=login');
+            exit;
+        }
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $id_etudiant = filter_input(INPUT_POST, 'id_etudiant', FILTER_VALIDATE_INT);
+            $id_club = filter_input(INPUT_POST, 'id_club', FILTER_VALIDATE_INT);
+            $date_inscription = filter_input(INPUT_POST, 'date_inscription', FILTER_SANITIZE_STRING);
+            $role = filter_input(INPUT_POST, 'role', FILTER_SANITIZE_STRING);
+
+            if (!$id_etudiant || !$id_club || !$date_inscription || !$role) {
+                $error = "Tous les champs sont obligatoires.";
+                $etudiants = $this->etudiantManager->findAll();
+                $clubs = $this->clubManager->findAll();
+                require 'view/backoffice/membre_create.php';
+                return;
+            }
+
+            if ($this->membreManager->findByEtudiantAndClub($id_etudiant, $id_club)) {
+                $error = "Cet étudiant est déjà membre de ce club.";
+                $etudiants = $this->etudiantManager->findAll();
+                $clubs = $this->clubManager->findAll();
+                require 'view/backoffice/membre_create.php';
+                return;
+            }
+
+            try {
+                $membre = new Membre(null, $id_etudiant, $id_club, $date_inscription, $role);
+                $this->membreManager->create($membre);
+                header('Location: ?controller=backoffice&action=membreCreate');
+                exit;
+            } catch (Exception $e) {
+                $error = "Erreur lors de la création du membre : " . $e->getMessage();
+                $etudiants = $this->etudiantManager->findAll();
+                $clubs = $this->clubManager->findAll();
+                require 'view/backoffice/membre_create.php';
+            }
+        } else {
+            header('Location: ?controller=backoffice&action=membreCreate');
+            exit;
+        }
+    }
 
     public function adhesionEdit($id) {
         if (!isset($_SESSION['admin_id'])) {

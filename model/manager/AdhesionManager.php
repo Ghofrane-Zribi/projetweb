@@ -105,5 +105,24 @@ class AdhesionManager {
         }
         return $adhesions;
     }
+    // Méthode pour vérifier une adhésion existante
+    public function findByEtudiantAndClub($id_etudiant, $id_club) {
+        $stmt = $this->pdo->prepare("
+            SELECT * FROM adhesions 
+            WHERE id_etudiant = :id_etudiant AND id_club = :id_club
+        ");
+        $stmt->execute([':id_etudiant' => $id_etudiant, ':id_club' => $id_club]);
+        $data = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($data) {
+            return new Adhesion(
+                $data['id_adhesion'],
+                $data['id_etudiant'],
+                $data['id_club'],
+                $data['date_demande'],
+                $data['statut']
+            );
+        }
+        return null;
+    }
 }
 ?>

@@ -32,26 +32,24 @@
                             <th>ID</th>
                             <th>Étudiant</th>
                             <th>Club</th>
+                            <th>Date d'inscription</th>
                             <th>Rôle</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php foreach ($membres as $membre): ?>
+                            <?php
+                            $etudiant = array_filter($etudiants, fn($e) => $e->getIdEtudiant() == $membre->getIdEtudiant());
+                            $etudiant = reset($etudiant);
+                            $club = array_filter($clubs, fn($c) => $c->getIdClub() == $membre->getIdClub());
+                            $club = reset($club);
+                            ?>
                             <tr>
                                 <td><?= htmlspecialchars($membre->getIdMembre()) ?></td>
-                                <td>
-                                    <?php
-                                    $etudiant = $etudiants[$membre->getIdEtudiant()] ?? null;
-                                    echo htmlspecialchars($etudiant ? $etudiant->getNom() . ' ' . $etudiant->getPrenom() : 'Inconnu');
-                                    ?>
-                                </td>
-                                <td>
-                                    <?php
-                                    $club = $clubs[$membre->getIdClub()] ?? null;
-                                    echo htmlspecialchars($club ? $club->getNomClub() : 'Inconnu');
-                                    ?>
-                                </td>
+                                <td><?= htmlspecialchars($etudiant ? $etudiant->getNom() . ' ' . $etudiant->getPrenom() : 'Inconnu') ?></td>
+                                <td><?= htmlspecialchars($club ? $club->getNomClub() : 'Inconnu') ?></td>
+                                <td><?= htmlspecialchars($membre->getDateInscription()) ?></td>
                                 <td><?= htmlspecialchars($membre->getRole()) ?></td>
                                 <td>
                                     <a href="?controller=backoffice&action=membreEdit&id=<?= urlencode($membre->getIdMembre()) ?>" class="btn btn-primary btn-sm">Modifier</a>

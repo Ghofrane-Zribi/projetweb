@@ -16,20 +16,19 @@
     <?php include 'navbar.php'; ?>
 
     <div class="container mt-5">
-        <h1 class="mb-4">Modifier un membre</h1>
+        <h1 class="mb-4">Ajouter un membre</h1>
 
         <?php if (isset($error)): ?>
             <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
         <?php endif; ?>
 
-        <form action="?controller=backoffice&action=membreEdit&id=<?= urlencode($membre->getIdMembre()) ?>" method="POST" class="needs-validation" novalidate>
+        <form action="?controller=backoffice&action=membreCreate" method="POST" class="needs-validation" novalidate>
             <div class="mb-3">
                 <label for="id_etudiant" class="form-label">Étudiant :</label>
-                <select class="form-control" id="id_etudiant" name="id_etudiant" required>
-                    <option value="">Sélectionner un étudiant</option>
+                <select class="form-select" id="id_etudiant" name="id_etudiant" required>
+                    <option value="">Sélectionnez un étudiant</option>
                     <?php foreach ($etudiants as $etudiant): ?>
-                        <option value="<?= htmlspecialchars($etudiant->getIdEtudiant()) ?>" 
-                                <?= $membre->getIdEtudiant() == $etudiant->getIdEtudiant() ? 'selected' : '' ?>>
+                        <option value="<?= htmlspecialchars($etudiant->getIdEtudiant()) ?>">
                             <?= htmlspecialchars($etudiant->getNom() . ' ' . $etudiant->getPrenom()) ?>
                         </option>
                     <?php endforeach; ?>
@@ -38,11 +37,10 @@
             </div>
             <div class="mb-3">
                 <label for="id_club" class="form-label">Club :</label>
-                <select class="form-control" id="id_club" name="id_club" required>
-                    <option value="">Sélectionner un club</option>
+                <select class="form-select" id="id_club" name="id_club" required>
+                    <option value="">Sélectionnez un club</option>
                     <?php foreach ($clubs as $club): ?>
-                        <option value="<?= htmlspecialchars($club->getIdClub()) ?>" 
-                                <?= $membre->getIdClub() == $club->getIdClub() ? 'selected' : '' ?>>
+                        <option value="<?= htmlspecialchars($club->getIdClub()) ?>">
                             <?= htmlspecialchars($club->getNomClub()) ?>
                         </option>
                     <?php endforeach; ?>
@@ -50,16 +48,21 @@
                 <div class="invalid-feedback">Veuillez sélectionner un club.</div>
             </div>
             <div class="mb-3">
+                <label for="date_inscription" class="form-label">Date d'inscription :</label>
+                <input type="date" class="form-control" id="date_inscription" name="date_inscription" required>
+                <div class="invalid-feedback">Veuillez entrer une date d'inscription.</div>
+            </div>
+            <div class="mb-3">
                 <label for="role" class="form-label">Rôle :</label>
-                <select class="form-control" id="role" name="role" required>
-                    <option value="président" <?= $membre->getRole() === 'président' ? 'selected' : '' ?>>Président</option>
-                    <option value="trésorier" <?= $membre->getRole() === 'trésorier' ? 'selected' : '' ?>>Trésorier</option>
-                    <option value="secrétaire" <?= $membre->getRole() === 'secrétaire' ? 'selected' : '' ?>>Secrétaire</option>
-                    <option value="membre" <?= $membre->getRole() === 'membre' ? 'selected' : '' ?>>Membre</option>
+                <select class="form-select" id="role" name="role" required>
+                    <option value="membre">Membre</option>
+                    <option value="président">Président</option>
+                    <option value="trésorier">Trésorier</option>
+                    <option value="secrétaire">Secrétaire</option>
                 </select>
                 <div class="invalid-feedback">Veuillez sélectionner un rôle.</div>
             </div>
-            <button type="submit" class="btn btn-primary">Modifier</button>
+            <button type="submit" class="btn btn-primary">Enregistrer</button>
             <a href="?controller=backoffice&action=membreList" class="btn btn-secondary">Retour</a>
         </form>
     </div>

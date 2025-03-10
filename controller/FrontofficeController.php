@@ -121,7 +121,7 @@ class FrontofficeController {
         }
     }
 
-    public function join_club($id_club) {
+    public function join_club2($id_club) {
         if (!isset($_SESSION['etudiant_id'])) {
             header('Location: ?controller=frontoffice&action=login');
             exit;
@@ -139,6 +139,55 @@ class FrontofficeController {
             }*/
             header('Location: ?controller=frontoffice&action=clubs_list');
             exit;
+        } else {
+            $error = "Erreur lors de l'inscription au club.";
+            $clubs = $this->clubManager->findAll();
+            require_once 'view/frontoffice/clubs_list.php';
+        }
+    }
+    public function join_club($id_club) {
+        if (!isset($_SESSION['etudiant_id'])) {
+            header('Location: ?controller=frontoffice&action=login');
+            exit;
+        }
+    
+        $id_etudiant = $_SESSION['etudiant_id'];
+        $date_demande = date('Y-m-d H:i:s');
+        $statut = 'en attente';
+    
+        // Débogage
+        error_log("join_club - id_etudiant: $id_etudiant, id_club: $id_club");
+    
+        // Vérification si l'étudiant est déjà membre
+        $membre = $this->membreManager->findByEtudiantAndClub($id_etudiant, $id_club);
+        if ($membre) {
+            $error = "Vous êtes déjà membre de ce club.";
+            $clubs = $this->clubManager->findAll();
+            require_once 'view/frontoffice/clubs_list.php';
+            return;
+        }
+    
+        // Vérification si une demande d'adhésion existe déjà
+        $existingAdhesion = $this->adhesionManager->findByEtudiantAndClub($id_etudiant, $id_club);
+        if ($existingAdhesion) {
+            $error = "Vous avez déjà une demande d'adhésion en cours pour ce club.";
+            $clubs = $this->clubManager->findAll();
+            require_once 'view/frontoffice/clubs_list.php';
+            return;
+        }
+    
+        // Création de la nouvelle adhésion
+        $adhesion = new Adhesion(null, $id_etudiant, $id_club, $date_demande, $statut);
+        if ($this->adhesionManager->create($adhesion)) {
+            // Vérifier à nouveau si l'étudiant n'est pas déjà membre (redondant mais pour sécurité)
+            $membre = $this->membreManager->findByEtudiantAndClub($id_etudiant, $id_club);
+            /*if (!$membre) {
+                $membre = new Membre(null, $id_etudiant, $id_club, $date_demande, 'membre');
+                $this->membreManager->create($membre);
+            }*/
+            $success = "Votre demande a été envoyée avec succès !";
+            $clubs = $this->clubManager->findAll();
+            require_once 'view/frontoffice/clubs_list.php';
         } else {
             $error = "Erreur lors de l'inscription au club.";
             $clubs = $this->clubManager->findAll();
