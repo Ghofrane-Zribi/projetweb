@@ -40,20 +40,26 @@ class MembreManager {
         return null;
     }
 
-    public function findByEtudiantAndClub($id_etudiant, $id_club) {
-        $stmt = $this->pdo->prepare("SELECT * FROM membres WHERE id_etudiant = :id_etudiant AND id_club = :id_club");
-        $stmt->execute([':id_etudiant' => $id_etudiant, ':id_club' => $id_club]);
-        $data = $stmt->fetch();
-        if ($data) {
-            return new Membre(
-                $data->id_membre,
-                $data->id_etudiant,
-                $data->id_club,
-                $data->date_inscription,
-                $data->role
+    public function findByEtudiantAndClub($id_etudiant, $id_club = null) {
+        $query = "SELECT * FROM membres WHERE id_etudiant = :id_etudiant";
+        $params = [':id_etudiant' => $id_etudiant];
+        if ($id_club !== null) {
+            $query .= " AND id_club = :id_club";
+            $params[':id_club'] = $id_club;
+        }
+        $stmt = $this->pdo->prepare($query);
+        $stmt->execute($params);
+        $membres = [];
+        while ($data = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $membres[] = new Membre(
+                $data['id_membre'],
+                $data['id_etudiant'],
+                $data['id_club'],
+                $data['date_inscription'],
+                $data['role']
             );
         }
-        return null;
+        return $membres; // Toujours retourner un tableau
     }
 
     public function findAll() {
@@ -112,6 +118,13 @@ class MembreManager {
     public function count() {
         $stmt = $this->pdo->query("SELECT COUNT(*) FROM membres");
         return $stmt->fetchColumn();
+    }
+    // Nouvelle méthode pour compter les membres d’un club
+    public function countMembersByClub($id_club) {
+        $stmt = $this->pdo->prepare("SELECT COUNT(*) as total FROM membres WHERE id_club = :id_club");
+        $stmt->execute([':id_club' => $id_club]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result['total'] ?? 0; // Retourne 0 si aucun membre
     }
 }
 ?>

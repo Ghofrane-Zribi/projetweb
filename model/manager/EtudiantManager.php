@@ -117,5 +117,6 @@ class EtudiantManager {
         $stmt = $this->pdo->query("SELECT COUNT(*) FROM etudiants");
         return $stmt->fetchColumn();
     }
+    
 }
 ?>

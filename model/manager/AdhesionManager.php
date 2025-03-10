@@ -81,5 +81,29 @@ class AdhesionManager {
         $stmt = $this->pdo->query("SELECT COUNT(*) FROM adhesions");
         return $stmt->fetchColumn();
     }
+    // Nouvelle méthode pour récupérer les demandes d'adhésion d’un étudiant
+    public function findByEtudiant($id_etudiant) {
+        $stmt = $this->pdo->prepare("
+            SELECT a.*, c.nom_club 
+            FROM adhesions a 
+            JOIN clubs c ON a.id_club = c.id_club 
+            WHERE a.id_etudiant = :id_etudiant
+        ");
+        $stmt->execute([':id_etudiant' => $id_etudiant]);
+        $adhesions = [];
+        while ($data = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $adhesion = new Adhesion(
+                $data['id_adhesion'],
+                $data['id_etudiant'],
+                $data['id_club'],
+                $data['date_demande'],
+                $data['statut']
+            );
+            // Ajouter le nom du club comme propriété supplémentaire
+            $adhesion->nom_club = $data['nom_club'];
+            $adhesions[] = $adhesion;
+        }
+        return $adhesions;
+    }
 }
 ?>

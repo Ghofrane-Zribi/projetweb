@@ -13,7 +13,7 @@
 </head>
 <body>
 <?php include 'navbar.php'; ?> <!-- Ajout de la navbar du backoffice -->
-    <div class="container mt-5">
+<div class="container mt-5">
         <h1 class="mb-4">Modifier une adhésion</h1>
 
         <?php if (isset($error)): ?>

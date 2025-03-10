@@ -6,6 +6,7 @@ class Adhesion {
     private $id_club;
     private $date_demande;
     private $statut;
+    public $nom_club; // Propriété publique pour stocker le nom du club
 
     public function __construct($id_adhesion = null, $id_etudiant = null, $id_club = null, $date_demande = null, $statut = 'en attente') {
         $this->id_adhesion = $id_adhesion;

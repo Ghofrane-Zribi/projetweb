@@ -16,10 +16,12 @@ require_once 'controller/ClubController.php';
 require_once 'controller/AdhesionController.php';
 require_once 'controller/MembreController.php';
 require_once 'controller/BackofficeController.php'; // Ajout du nouveau contrôleur
+require_once 'controller/FrontofficeController.php';
 
 $controller = isset($_GET['controller']) ? $_GET['controller'] : 'etudiant';
 $action = isset($_GET['action']) ? $_GET['action'] : 'list';
 $id = isset($_GET['id']) ? $_GET['id'] : null;
+$id_club = isset($_GET['id_club']) ? (int)$_GET['id_club'] : null;
 
 switch ($controller) {
     case 'etudiant':
@@ -243,6 +245,45 @@ switch ($controller) {
                 $backofficeController->login();
         }
         break;
+        case 'frontoffice':
+            $frontofficeController = new FrontofficeController();
+            switch ($action) {
+                case 'login':
+                    $frontofficeController->login();
+                    break;
+                case 'logout':
+                    $frontofficeController->logout();
+                    break;
+                case 'register':
+                    $frontofficeController->register();
+                    break;
+                case 'clubs_list':
+                    $frontofficeController->clubs_list();
+                    break;
+                case 'club_details':
+                    if ($id_club === null) {
+                        $frontofficeController->clubs_list(); // Rediriger vers la liste avec un message d'erreur si nécessaire
+                    } else {
+                        $frontofficeController->club_details($id_club);
+                    }
+                    break;
+                case 'join_club':
+                    if ($id_club === null) {
+                        $frontofficeController->clubs_list(); // Rediriger vers la liste avec un message d'erreur si nécessaire
+                    } else {
+                        $frontofficeController->join_club($id_club);
+                    }
+                    break;
+                case 'profile':
+                    $frontofficeController->profile();
+                    break;
+                case 'my_clubs':
+                    $frontofficeController->my_clubs();
+                    break;
+                default:
+                    $frontofficeController->login();
+            }
+            break;
 
     default:
         $etudiantController = new EtudiantController();
