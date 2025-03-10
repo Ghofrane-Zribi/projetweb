@@ -17,7 +17,6 @@
 
     <div class="container mt-5">
         <h1 class="mb-4">Tableau de bord Administrateur</h1>
-        <a href="?controller=admin&action=logout" class="btn btn-danger mb-3">Se déconnecter</a>
 
         <?php if (isset($error)): ?>
             <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
@@ -67,20 +66,7 @@
             </div>
         </div>
 
-        <!-- Répartition des rôles (globale) -->
-        <h2 class="mb-3">Répartition des rôles</h2>
-        <div class="row mb-4">
-            <?php foreach ($repartitionRoles as $role => $count): ?>
-                <div class="col-md-3">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title"><?= htmlspecialchars(ucfirst($role)) ?>s</h5>
-                            <p class="card-text"><?= htmlspecialchars($count) ?></p>
-                        </div>
-                    </div>
-                </div>
-            <?php endforeach; ?>
-        </div>
+        
 
         <!-- Statistiques par club -->
         <h2 class="mb-3">Statistiques par club</h2>
@@ -105,22 +91,7 @@
                                         </div>
                                     </div>
                                 </p>
-                                <h6>bureau :</h6>
-                                <ul>
-                                    <?php $roles = $nomsRolesParClub[$club->getIdClub()]; ?>
-                                    <?php if ($roles['président']): ?>
-                                        <li>Président : <?= htmlspecialchars($roles['président']) ?></li>
-                                    <?php endif; ?>
-                                    <?php if ($roles['trésorier']): ?>
-                                        <li>Trésorier : <?= htmlspecialchars($roles['trésorier']) ?></li>
-                                    <?php endif; ?>
-                                    <?php if ($roles['secrétaire']): ?>
-                                        <li>Secrétaire : <?= htmlspecialchars($roles['secrétaire']) ?></li>
-                                    <?php endif; ?>
-                                    <?php if ($roles['membre'] > 0): ?>
-                                        <li>Membres : <?= htmlspecialchars($roles['membre']) ?></li>
-                                    <?php endif; ?>
-                                </ul>
+                                
                             </div>
                         </div>
                     </div>
